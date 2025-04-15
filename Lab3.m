@@ -58,3 +58,41 @@ legend('K_p=10, K_\theta=0','K_p=20, K_\theta=0','K_p=5, K_\theta=0',...
     'K_p=10, K_\theta=1','K_p=10, K_\theta=-1','K_p=10, K_\theta=-0.5');
 ylabel('\Theta_L/\Theta_D [rad]');
 xlabel('Time [s]');
+
+
+%determining new gain values
+kptheta_test=10;
+kdtheta_test=0.5;
+
+d2_test=1;
+d1_test=(kg^2*km^2/(j*rm)+kdtheta_test*kg*km/(j*rm));
+d0_test=kptheta_test*kg*km/(j*rm);
+
+den_test=[d2_test d1_test d0_test];
+num_test=kptheta_test*kg*km/(j*rm);
+
+sysTF_test=tf(num_test,den_test(:)');
+
+[x2,t2]=gensig('square',2,10);
+x2=x2-0.5;
+
+[x3, t3]=lsim(sysTF_test,x2,t2);
+figure(2);
+plot(t3,x3);
+hold on
+plot(t2,x2);
+
+x2_overshoot_pos=x2*1.2;
+x2_overshoot_neg=x2*0.8;
+plot(t2,x2_overshoot_neg);
+plot(t2,x2_overshoot_pos);
+
+x2_5over=x2*1.05;
+x2_5under=x2*0.95;
+plot(t2,x2_5under);
+plot(t2,x2_5over);
+for i=1:10
+    xline(i)
+end
+
+legend('Actual','Reference','minus 20','plus 20');
