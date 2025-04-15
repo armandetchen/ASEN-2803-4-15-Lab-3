@@ -1,4 +1,5 @@
 %% Defnine variables 
+close all
 clc
 clear
 
