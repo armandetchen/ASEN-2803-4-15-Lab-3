@@ -3,6 +3,7 @@
 %housekeeping
 close all;clear;clc;
 hold on; grid on;
+set(0,'DefaultLineLineWidth',2);
 
 %constants
 kg=33.3;
@@ -61,38 +62,53 @@ xlabel('Time [s]');
 
 
 %determining new gain values
-kptheta_test=10;
-kdtheta_test=0.5;
+kptheta_test=13;
+kdtheta_test=1.7;
 
+%denominator
 d2_test=1;
 d1_test=(kg^2*km^2/(j*rm)+kdtheta_test*kg*km/(j*rm));
 d0_test=kptheta_test*kg*km/(j*rm);
-
 den_test=[d2_test d1_test d0_test];
+
+%numerator
 num_test=kptheta_test*kg*km/(j*rm);
 
+%transfer function
 sysTF_test=tf(num_test,den_test(:)');
 
+%square wave reference signal, A=0.5rad, T=2s, t:[0,10]
 [x2,t2]=gensig('square',2,10);
 x2=x2-0.5;
 
+%system response
 [x3, t3]=lsim(sysTF_test,x2,t2);
+
+%plotting system state
 figure(2);
 plot(t3,x3);
 hold on
 plot(t2,x2);
 
+%overshoot 20%
 x2_overshoot_pos=x2*1.2;
 x2_overshoot_neg=x2*0.8;
 plot(t2,x2_overshoot_neg);
 plot(t2,x2_overshoot_pos);
 
+%settling time 5%
 x2_5over=x2*1.05;
 x2_5under=x2*0.95;
 plot(t2,x2_5under);
 plot(t2,x2_5over);
+
+%t reference
 for i=1:10
-    xline(i)
+    xline(i,'LineStyle',':','LineWidth',2)
 end
 
-legend('Actual','Reference','minus 20','plus 20');
+%plot labels
+title('User Input Gain Values')
+legend('Actual','Reference','minus 20','plus 20','minus 5','plus 5');
+xlabel('Time [s]');
+ylabel('Arm Position [rad]');
