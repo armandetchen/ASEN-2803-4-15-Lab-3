@@ -1,4 +1,4 @@
-%ASEN 2803, Lab 3, Group 4-15, Armand Etchen, MOD 15APR2025
+%ASEN 2803, Lab 3, Group 4-15, Armand Etchen, MOD 28APR2025
 
 %housekeeping
 close all;clear;clc;
@@ -22,7 +22,7 @@ fc=1.8;
 jl=jarm+jm;
 karm=(2*pi*fc)^2*(jl);
 
-%gain values
+%gain values (question 1.2)
 kptheta=[10 20 5 10 10 10];
 kdtheta=[0 0 0 1 -1 -0.5];
 
@@ -60,10 +60,9 @@ legend('K_p=10, K_\theta=0','K_p=20, K_\theta=0','K_p=5, K_\theta=0',...
 ylabel('\Theta_L/\Theta_D [rad]');
 xlabel('Time [s]');
 
-
-%determining new gain values
+%determining user derived gain values
 kptheta_test=13;
-kdtheta_test=1.7;
+kdtheta_test=1.5;
 
 %denominator
 d2_test=1;
@@ -78,13 +77,14 @@ num_test=kptheta_test*kg*km/(j*rm);
 sysTF_test=tf(num_test,den_test(:)');
 
 %square wave reference signal, A=0.5rad, T=2s, t:[0,10]
-[x2,t2]=gensig('square',2,10);
+[x2,t2]=gensig('square',5,10);
 x2=x2-0.5;
+x2=-x2;
 
 %system response
 [x3, t3]=lsim(sysTF_test,x2,t2);
 
-%plotting system state
+%plotting system state for model data
 figure(2);
 plot(t3,x3);
 hold on
@@ -102,13 +102,58 @@ x2_5under=x2*0.95;
 plot(t2,x2_5under);
 plot(t2,x2_5over);
 
-%t reference
-for i=1:10
-    xline(i,'LineStyle',':','LineWidth',2)
-end
-
 %plot labels
 title('User Input Gain Values')
-legend('Actual','Reference','minus 20','plus 20','minus 5','plus 5');
+legend('Calculated Value','Reference Value','20% Under','20% Over','5% Under','5% Over');
 xlabel('Time [s]');
 ylabel('Arm Position [rad]');
+grid on;
+ylim([-0.7 0.7]);
+
+%parsing experimental data with calculated gain values
+filename='dataset3.txt';
+inmat=readmatrix(filename);
+ttest=inmat(:,1);
+ttest=ttest(1501:11501);
+ttest=ttest-ttest(1);
+ttest=ttest/1000;
+thetatest=inmat(:,2);
+thetatest=thetatest(1501:11501);
+
+%plotting experimental data for user derived gain
+figure(3)
+plot(ttest,thetatest);
+hold on;
+plot(t2,x2*1.2);
+plot(t2,x2*0.8);
+plot(t2,x2*1.05);
+plot(t2,x2*0.95);
+xline(5,'LineStyle',':','LineWidth',2);
+xlim([0 10]);
+ylim([-0.6 0.6]);
+title('Experimental Hub Angle vs. Time for K_p=13, K_d=1.5');
+xlabel('Time [s]');
+ylabel('Arm Position [rad]');
+grid on;
+legend('Measured','20% Over','20% Under','5% Over','5% Under');
+
+%plotting comparison of experimental and modelled data for user derived gain
+figure(4);
+plot(ttest,thetatest);
+hold on;
+plot(t2,x2);
+plot(t3,x3);
+xlim([0 10]);
+ylim([-0.6 0.6]);
+plot(ttest,thetatest);
+plot(t2,x2*1.2);
+plot(t2,x2*0.8);
+plot(t2,x2*1.05);
+plot(t2,x2*0.95);
+xline(5,'LineStyle',':','LineWidth',2);
+legend('','Reference Value','Model Response','Measured Angle','20% Over','20% Under','5% Over','5% Under');
+xlabel('Time [s]');
+ylabel('Arm Position [rad]');
+title('Experimental vs. Modelled Arm Position vs Time for K_p=13, K_d=1.5');
+grid on;
+
